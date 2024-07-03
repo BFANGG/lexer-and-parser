@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lexer-parser</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <div>
+        <ul class="nav nav-tabs fixed-top bg-light">
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#lexer-grammar-tab" id="defaultOpen">lexer grammar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#parser-grammar-tab">parser grammar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#lexer-parser">lexer</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content m-5">
+        <div id="lexer-grammar-tab" class="tab-pane fade in active">
+            <h1 class="text-center font-weight-bold">词法分析正规文法</h1>
+            <div id="grammar1">
+            </div>
+        </div>
+        <div id="parser-grammar-tab" class="tab-pane fade">
+            <div class="container p-2">
+                <h3 class="text-center font-weight-bold">语法分析2型文法</h3>
+                <br>
+                <ol>
+                    <div id="grammar2">
+                    </div>
+                    <script>
+                        let text = `//程序
+&lt;program&gt; -> &lt;function&gt; &lt;program&gt; | ε
+//函数
+&lt;function&gt; -> &lt;*type_keyword&gt; &lt;*identifier&gt; ( &lt;parameter&gt; ) { &lt;statements&gt; }
+//参数
+&lt;parameter&gt; -> &lt;*qualifier_keyword&gt; &lt;*type_keyword&gt; &lt;*identifier&gt; | &lt;*type_keyword&gt; &lt;*identifier&gt; | &lt;*qualifier_keyword&gt; &lt;*type_keyword&gt; &lt;*identifier&gt; , &lt;parameter&gt; | &lt;*type_keyword&gt; &lt;*identifier&gt; , &lt;parameter&gt; | ε
+//语句集
+&lt;statements&gt; -> &lt;declare_statement&gt; &lt;statements&gt; | &lt;for_statement&gt; &lt;statements&gt;| &lt;while_statement&gt; &lt;statements&gt;| &lt;if_statement&gt; &lt;statements&gt;|&lt;assignment_statement&gt; &lt;statements&gt;|&lt;function_call_statement&gt;&lt;statements&gt; | &lt;return_statement&gt;| ε
+//声明语句
+&lt;declare_statement&gt; -> &lt;*type_keyword&gt; &lt;*identifier&gt; ;| &lt;*type_keyword&gt; &lt;*identifier&gt;= &lt;expression&gt; ;|&lt;*qualifier_keyword&gt;&lt;*type_keyword&gt; &lt;*identifier&gt;= &lt;expression&gt; ;
+//赋值语句
+&lt;assignment_statement&gt; -> &lt;*identifier&gt; &lt;*assignment_operator&gt; &lt;arithmetic_expression&gt; ;
+//for语句
+&lt;for_statement&gt; -> for ( &lt;for_condition&gt; ) { &lt;statements&gt;} |for ( &lt;for_condition&gt; ) {&lt;statements&gt; break ;}| for ( &lt;for_condition&gt; ){&lt;statements&gt; continue ;} | for ( &lt;for_condition&gt; ){ ε}
+&lt;for_condition&gt; -> &lt;assignment_statement&gt; ; &lt;condition&gt; ; &lt;increment&gt;
+//while语句
+&lt;while_statement&gt; -> while ( &lt;condition&gt; ) { &lt;statements&gt;} | while ( &lt;condition&gt; ){&lt;statements&gt; break ;} | while ( &lt;condition&gt; ){&lt;statements&gt; continue ; } | while ( &lt;condition&gt; ){ ε } 
+//条件语句
+&lt;if_statement&gt; -> if ( &lt;condition&gt; ) { &lt;statements&gt; } else { &lt;statements&gt; } | if ( &lt;condition&gt; ) { &lt;statements&gt; } | if ( &lt;condition&gt; )
+&lt;increment&gt; -> &lt;*identifier&gt;++ | &lt;*identifier&gt;-- | &lt;*identifier&gt; = &lt;arithmetic_expression&gt;
+&lt;condition&gt; -> &lt;logical_expression&gt; | &lt;arithmetic_expression&gt;| &lt;*identifier&gt; | &lt;*constant&gt;
+//函数调用语句
+&lt;function_call_statement&gt; -> &lt;function_call&gt; ;
+//return语句
+&lt;return_statement&gt; -> return &lt;expression&gt; ; | return ;
+//函数调用表达式
+&lt;function_call&gt; -> &lt;identifier&gt; ( &lt;parameters&gt; )
+&lt;parameters&gt; -> &lt;expression&gt; , &lt;parameters&gt; | &lt;expression&gt; | ε
+//表达式
+&lt;expression&gt; -> &lt;arithmetic_expression&gt; | &lt;logical_expression&gt; | &lt;function_call&gt; | &lt;*identifier&gt; | &lt;*constant&gt;
+//逻辑表达式
+&lt;logical_expression&gt; -> &lt;unary_logical_expression&gt; &lt;binary_logical_expression&gt;
+//一元逻辑表达式
+&lt;unary_logical_expression&gt; -> !&lt;boolean_expression&gt; | &lt;boolean_expression&gt;
+//二元逻辑表达式序列
+&lt;binary_logical_expression&gt; -> && &lt;unary_logical_expression&gt; &lt;binary_logical_expression&gt; | \\ &lt;unary_logical_expression&gt; &lt;binary_logical_expression&gt;|ε
+//布尔表达式，表达式的值为布尔值，包含关系表达式
+&lt;boolean_expression&gt; -> true | false | &lt;relational_expression&gt;
+//关系表达式
+&lt;relational_expression&gt; -> &lt;term&gt; &lt;*relational_operators&gt; &lt;term&gt;
+//运算表达式，包括算术运算和位运算
+&lt;arithmetic_expression&gt; -> &lt;arithmetic_expression&gt; &lt;arithmetic_operator&gt; &lt;term&gt; |&lt;arithmetic_expression&gt; &lt;bitwise_operator&gt; &lt;term&gt; | &lt;term&gt;
+&lt;term&gt; -> &lt;*identifier&gt; | &lt;*constant&gt;`;
+                        let text2 = `***类型语句关键字 void int bool float char 
+&lt;type_keyword&gt;-&gt;v&lt;A&gt;|i&lt;D&gt;|b&lt;F&gt;|f&lt;I&gt;|c&lt;M&gt;
+&lt;A&gt;-&gt;o&lt;B&gt;
+&lt;B&gt;-&gt;i&lt;C&gt;
+&lt;C&gt;-&gt;d
+&lt;D&gt;-&gt;n&lt;E&gt;
+&lt;E&gt;-&gt;t
+&lt;F&gt;-&gt;o&lt;G&gt;
+&lt;G&gt;-&gt;o&lt;H&gt;
+&lt;H&gt;-&gt;l
+&lt;I&gt;-&gt;l&lt;J&gt;
+&lt;J&gt;-&gt;o&lt;K&gt;
+&lt;K&gt;-&gt;a&lt;L&gt;
+&lt;L&gt;-&gt;t
+&lt;M&gt;-&gt;h&lt;N&gt;
+&lt;N&gt;-&gt;a&lt;O&gt;
+&lt;O&gt;-&gt;r
+***控制语句关键字 return for while break continue if else
+&lt;control_keyword&gt;-&gt;r&lt;A&gt;|f&lt;F&gt;|w&lt;H&gt;|b&lt;L&gt;|c&lt;P&gt;|i&lt;W&gt;|e&lt;X&gt;
+&lt;A&gt;-&gt;e&lt;B&gt;
+&lt;B&gt;-&gt;t&lt;C&gt;
+&lt;C&gt;-&gt;u&lt;D&gt;
+&lt;D&gt;-&gt;r&lt;E&gt;
+&lt;E&gt;-&gt;n
+&lt;F&gt;-&gt;o&lt;G&gt;
+&lt;G&gt;-&gt;r
+&lt;H&gt;-&gt;h&lt;I&gt;
+&lt;I&gt;-&gt;i&lt;J&gt;
+&lt;J&gt;-&gt;l&lt;K&gt;
+&lt;K&gt;-&gt;e
+&lt;L&gt;-&gt;r&lt;M&gt;
+&lt;M&gt;-&gt;e&lt;N&gt;
+&lt;N&gt;-&gt;a&lt;O&gt;
+&lt;O&gt;-&gt;k
+&lt;P&gt;-&gt;o&lt;Q&gt;
+&lt;Q&gt;-&gt;n&lt;R&gt;
+&lt;R&gt;-&gt;t&lt;S&gt;
+&lt;S&gt;-&gt;i&lt;T&gt;
+&lt;T&gt;-&gt;n&lt;U&gt;
+&lt;U&gt;-&gt;u&lt;V&gt;
+&lt;V&gt;-&gt;e
+&lt;W&gt;-&gt;f
+&lt;X&gt;-&gt;l&lt;Y&gt;
+&lt;Y&gt;-&gt;s&lt;Z&gt;
+&lt;Z&gt;-&gt;e
+***修饰符 const，volatile 和 restrict
+&lt;qualifier_keyword&gt;-&gt;c&lt;A&gt;|v&lt;B&gt;|r&lt;C&gt;
+&lt;A&gt;-&gt;o&lt;D&gt;
+&lt;D&gt;-&gt;n&lt;E&gt;
+&lt;E&gt;-&gt;s&lt;F&gt;
+&lt;F&gt;-&gt;t
+&lt;B&gt;-&gt;o&lt;G&gt;
+&lt;G&gt;-&gt;l&lt;H&gt;
+&lt;H&gt;-&gt;a&lt;I&gt;
+&lt;I&gt;-&gt;t&lt;J&gt;
+&lt;J&gt;-&gt;i&lt;K&gt;
+&lt;K&gt;-&gt;l&lt;L&gt;
+&lt;L&gt;-&gt;e
+&lt;C&gt;-&gt;e&lt;D&gt;
+&lt;D&gt;-&gt;s&lt;E&gt;
+&lt;E&gt;-&gt;t&lt;F&gt;
+&lt;F&gt;-&gt;r&lt;G&gt;
+&lt;G&gt;-&gt;i&lt;H&gt;
+&lt;H&gt;-&gt;c&lt;I&gt;
+&lt;I&gt;-&gt;t
+***标识符
+&lt;identifier&gt;->_|L|_&lt;字母数字下划线&gt;|L&lt;字母数字下划线&gt;
+&lt;字母数字下划线&gt;->_|L|D|_&lt;字母数字下划线&gt;|L&lt;字母数字下划线&gt;|D&lt;字母数字下划线&gt;
+****
+&lt;Delimiter&gt;-&gt;,|;|(|)|[|]|{|}
+****算术运算符 + - * / ++ -- %
+&lt;arithmetic_operator&gt;-&gt;+&lt;A&gt;|-&lt;B&gt;|*|/|%
+&lt;A&gt;-&gt;+|ε
+&lt;B&gt;-&gt;-|ε
+****逻辑运算符 && // !
+&lt;logical_operator&gt;-&gt;&amp;&lt;A&gt;|/&lt;B&gt;|!
+&lt;A&gt;-&gt;&amp;
+&lt;B&gt;-&gt;/
+****位运算符 &  ^ ~ << >>
+&lt;bitwise_operator&gt;-&gt;&amp;|^|~|&lt;&lt;A&gt;|&gt;&lt;B&gt;
+&lt;A&gt;-&gt;&lt;
+&lt;B&gt;-&gt;&gt;
+****关系运算符 &lt; &lt;= &gt; &gt;= != ==
+&lt;relational_operators&gt;-&gt;&lt;|&lt;&lt;A&gt;|&gt;|&gt;&lt;A&gt;|!&lt;A&gt;|=&lt;A&gt;
+&lt;A&gt;-&gt;=
+****
+&lt;assignment_operator&gt;-&gt;+&lt;E&gt;|-&lt;E&gt;|*&lt;E&gt;|/&lt;E&gt;|ε&lt;E&gt;
+&lt;E&gt;-&gt;=
+******
+&lt;constant&gt;-&gt;ε&lt;boolean_constant&gt;|ε&lt;number_constant&gt;|ε&lt;string_constant&gt;
+&lt;boolean_constant&gt;-&gt;t&lt;A&gt;|f&lt;B&gt;
+&lt;A&gt;-&gt;r&lt;C&gt;
+&lt;C&gt;-&gt;u&lt;D&gt;
+&lt;D&gt;-&gt;e
+&lt;B&gt;-&gt;a&lt;C&gt;
+&lt;C&gt;-&gt;l&lt;D&gt;
+&lt;D&gt;-&gt;s&lt;E&gt;
+&lt;E&gt;-&gt;e
+&lt;<number_constant>-&gt;ε&lt;有符号数&gt;|ε&lt;无符号数&gt;
+<有符号数&gt;-+&lt;无符号数&gt;|-&lt;无符号数&gt;
+<无符号数&gt;-|0&lt;纯小数&gt;|1&lt;余留无符号实数&gt;|2&lt;余留无符号实数&gt;|3&lt;余留无符号实数&gt;|4&lt;余留无符号实数&gt;|5&lt;余留无符号实数&gt;|6&lt;余留无符号实数&gt;|7&lt;余留无符号实数&gt;|8&lt;余留无符号实数&gt;|9&lt;余留无符号实数&gt;|$&lt;余留复数&gt;|D
+<纯小数&gt;->.&lt;十制小数&gt;
+<余留无符号实数&gt;-&gt;D&lt;余留无符号实数&gt;|.&lt;十制小数&gt;|e&lt;指数部分&gt;|ε
+<十制小数&gt;-&gt;D&lt;余留十制小数&gt;
+<余留十制小数&gt;-&gt;e&lt;指数部分&gt;|D&lt;余留十制小数&gt;|ε
+<指数部分&gt;-&gt;D&lt;余留整指数&gt;|+&lt;整指数&gt;|-&lt;整指数&gt;
+<整指数&gt;-&gt;D&lt;余留整指数&gt;
+<余留整指数&gt;-&gt;D&lt;余留整指数&gt;|ε
+<余留复数&gt;-&gt;D&lt;余留复数&gt;|.&lt;十制小数2&gt;|+&lt;虚部&gt;
+<十制小数2&gt;-&gt;D&lt;余留十制小数2&gt;
+<余留十制小数2&gt;-&gt;+&lt;虚部&gt;|D&lt;余留十制小数2&gt;|ε
+<虚部&gt;-&gt;D&lt;余留虚部&gt;
+<余留虚部&gt;-&gt;D&lt;余留虚部&gt;|.&lt;十制小数3&gt;|i
+<十制小数3&gt;-&gt;D&lt;余留十制小数3&gt;
+<余留十制小数3&gt;-&gt;D&lt;余留十制小数3&gt;|i
+<string_constant&gt;-&gt;'<余留字符串&gt;
+<余留字符串&gt;-&gt;L&lt;余留字符串&gt;|'
+`
+                        let lines = text.split('\n');
+                        let lines2 = text2.split('\n');
+                        let html = lines.join('<br>');
+                        let html2 = lines2.join('<br>');
+                        document.querySelector('#grammar2').innerHTML = html;
+                        document.querySelector('#grammar1').innerHTML = html2;
+                    </script>
+                </ol>
+            </div>
+        </div>
+        <div id="lexer-parser" class="tab-pane fade">
+            <div class="row m-5 input-field mx-auto">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="test-string-input" class="font-weight-bold">Check Strings (Input)</label>
+                        <textarea class="form-control" id="test-string-input" rows="10"
+                            placeholder="在这里输入测试代码"></textarea>
+                        <button class="btn btn-info m-2" type="button" id="checkStringsBtn">Check</button>
+                    </div>
+                </div>
+                <script>
+                    document.getElementById('checkStringsBtn').addEventListener('click', function () {
+                        let inputText = document.getElementById('test-string-input').value;
+                        fetch('/data', {
+                            method: 'POST', // 或者 'GET'
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ input: inputText }),
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                // 获取结果
+                                const { lexer_res, parser_res } = data;
+                                console.log("data" + data.lexer_res);
+                                console.log("data" + data.parser_res);
+                                // 获取列表元素
+                                const lexerlist = document.getElementById('lexer_errorInfo');
+                                const parserlist = document.getElementById('parser_errorInfo');
+                                // 清除列表中的旧元素
+                                while (lexerlist.firstChild) {
+                                    lexerlist.removeChild(lexerlist.firstChild);
+                                }
+                                // 设置lexer的输出
+                                lexer_res.tokens.forEach((item, index) => {
+                                    const li = document.createElement('li');
+                                    li.textContent = `Token(lineNumber=${item.lineNumber}, type=${item.type}, value=${item.value})`;
+                                    lexerlist.appendChild(li);
+                                });
+                                lexer_res.errorInfo.forEach((item, index) => {
+                                    const li = document.createElement('li');
+                                    li.textContent = item;
+                                    //字体颜色为红色
+                                    li.style.color = "red";
+                                    lexerlist.appendChild(li);
+                                });
+                                //如果data.parser_res为lexical Analysis error, 即词法分析错误
+                                if (parser_res == "lexical Analysis error") {
+                                    parserlist.innerHTML = data.lexer_res + ",不进行语法分析";
+                                }
+                                else {
+                                    // 设置parser的输出
+                                    if (parser_res.length == 0) {
+                                        parserlist.innerHTML = "语法分析成功";
+                                    } else {
+                                        parserlist.innerHTML = "语法分析失败";
+                                        //打印错误信息
+                                        parser_res.forEach((item, index) => {
+                                            const li = document.createElement('li');
+                                            console.log(item + "sssssssssssssssss");
+                                            li.textContent = item;
+                                            //字体颜色为红色
+                                            li.style.color = "red";
+                                            parserlist.appendChild(li);
+                                        });
+                                    }
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    });
+                </script>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="rg-input" class="font-weight-bold">lexer result (output)</label>
+                        <ul id="lexer_errorInfo"></ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="rg-input" class="font-weight-bold"> parser result (output)</label>
+                        <ul id="parser_errorInfo"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ml-5 mt-5 pl-5 pr-2">
+            <div class="row">
+                <div class="col-md-2">
+                    <p id="outputNfaInfo"></p>
+                </div>
+                <div class="col-md-4">
+                    <div id="tableWETitle" class="tableTitle"></div>
+                    <table id="transitionTableEpsilon" class="outputTable transitionTbl"></table>
+                </div>
+                <div class="col-md-4">
+                    <div id="tableWOETitle" class="tableTitle"></div>
+                    <table id="transitionTableWOEpsilon" class="outputTable transitionTbl"></table>
+                </div>
+                <div class="col-md-2">
+                    <table id="testStringsTable" class="outputTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
